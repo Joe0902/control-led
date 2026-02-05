@@ -2,48 +2,75 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>Monitor LED</title>
+    <title>Monitor LED Gráfico</title>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
     <style>
-        body { font-family: Arial, sans-serif; text-align: center; margin-top: 50px; background-color: #f0f0f0; }
-        .caja { background: white; padding: 40px; border-radius: 15px; display: inline-block; box-shadow: 0 4px 8px rgba(0,0,0,0.2); }
-        h1 { color: #333; }
-        #estado-texto { font-size: 60px; font-weight: bold; color: gray; }
+        body { font-family: Arial, sans-serif; text-align: center; margin-top: 50px; background-color: #222; color: white; }
+        .caja { 
+            background: #333; 
+            padding: 40px; 
+            border-radius: 20px; 
+            display: inline-block; 
+            box-shadow: 0 0 20px rgba(255, 255, 0, 0.1); 
+            transition: box-shadow 0.5s;
+        }
+        h1 { margin-bottom: 30px; }
+        
+        /* Estilo de la imagen */
+        #imagen-foco { 
+            width: 150px; 
+            height: auto; 
+            transition: filter 0.3s;
+        }
+        
+        /* Clase para efecto de brillo cuando está on */
+        .brillando {
+            filter: drop-shadow(0 0 15px yellow);
+        }
     </style>
 </head>
 <body>
 
-    <div class="caja">
-        <h1>Estado del Sistema</h1>
-        <div id="estado-texto">Esperando...</div>
+    <div class="caja" id="tarjeta">
+        <h1>Control de Luces</h1>
+        
+        <img id="imagen-foco" src="foco_off.png" alt="Estado del foco">
+        
+        <h2 id="estado-texto" style="margin-top: 20px;">Esperando...</h2>
     </div>
 
     <script>
-        // --- AQUÍ ES DONDE DEBES HACER EL CAMBIO ---
+        // --- PEGA AQUÍ TU LINK DE FIREBASE OTRA VEZ ---
         const configuracion = {
-            databaseURL: "https://control-led-joel-default-rtdb.firebaseio.com/"
+            databaseURL: "https://control-led-joel-default-rtdb.firebaseio.com/" 
         };
         // ---------------------------------------------
 
         firebase.initializeApp(configuracion);
-
-        // Esto busca la palabra "estado" dentro de tu base de datos
-        // Nota: Coincide con lo que pusiste en App Inventor (.../estado.json)
         var referencia = firebase.database().ref('estado');
 
         referencia.on('value', (snapshot) => {
             const valor = snapshot.val();
-            const elemento = document.getElementById('estado-texto');
+            const texto = document.getElementById('estado-texto');
+            const imagen = document.getElementById('imagen-foco');
+            const tarjeta = document.getElementById('tarjeta');
             
             if (valor) {
-                elemento.innerText = valor;
+                texto.innerText = valor;
                 
-                // Cambiar color según el texto
                 if(valor == "Encendido") {
-                    elemento.style.color = "green";
-                } else if (valor == "Apagado") {
-                    elemento.style.color = "red";
+                    // Si dice Encendido: Ponemos la foto ON y efecto de brillo
+                    imagen.src = "foco_on.png";
+                    texto.style.color = "#ffff00"; // Texto amarillo
+                    imagen.classList.add("brillando");
+                    tarjeta.style.boxShadow = "0 0 50px rgba(255, 255, 0, 0.5)"; // Resplandor en la caja
+                } else {
+                    // Si dice Apagado: Ponemos la foto OFF y quitamos brillo
+                    imagen.src = "foco_off.png";
+                    texto.style.color = "#aaaaaa"; // Texto gris
+                    imagen.classList.remove("brillando");
+                    tarjeta.style.boxShadow = "0 0 20px rgba(0, 0, 0, 0.5)"; // Sombra normal
                 }
             }
         });
